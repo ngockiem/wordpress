@@ -41,10 +41,14 @@ global $themify; ?>
 </div>
 </div>
 <!-- LOADING AREA  END ======-->
+
 <div id="pagewrap" class="hfeed site">
-
+	<div class="fat-nav">
+      <div class="fat-nav__wrapper">
+        <?php wp_nav_menu( array()); ?>
+      </div>
+    </div>
 	<div id="headerwrap">
-
 		<?php themify_header_before(); // hook ?>
 		<header id="header" itemscope="itemscope" itemtype="https://schema.org/WPHeader">
         <?php themify_header_start(); // hook ?>

@@ -1678,6 +1678,57 @@ body.error404 .page-title {
 }
 /* /loading */
 
+/*===================================================================
+==============================     WIDTH 1024px     =================
+===================================================================*/
+
+@media screen and (max-width: 1024px) {
+  body #footerwrap #footer.pagewidth,
+  body .module_row.fullwidth .row_inner, body .row_inner {
+   	max-width: 94%; 
+  }
+  .home-row01 .col3-1 .tb-column-inner {
+    padding: 30px 3%;
+  }
+  .module.feature-content .module-feature-chart-html5 .chart-html5-inset {
+    margin-right: 0;
+  }
+  .module.feature-content .module-feature-title {
+  	font-size: 15px;
+  }
+  body .themify_builder .home-row01 .row_inner {
+    height: auto;
+  }
+  .home-row02,
+  .home-row06 {
+    padding: 50px 0;
+  }
+  body .themify_builder .module_row.home-product-row {
+    padding: 50px 0 30px;
+  }
+  .home-row04 {
+   	padding: 50px 0 40px; 
+  }
+  .home-row05,
+  .product-row01 {
+   	padding: 50px 0 0; 
+  }
+  .module.ft-info-box::before {
+   	font-size: 30px; 
+  }
+  .module.ft-info-box {
+    font-size: 15px;
+  }
+  .contact-white-col {
+   	padding: 50px 50px 30px; 
+  }
+  .service-row01 {
+   	padding: 0 0 50px; 
+  }
+  .news-row01 {
+   	padding: 50px 0 20px; 
+  }
+}/* #1024px */
 
 
 

@@ -26,9 +26,9 @@ function replace_core_jquery_version() {
 add_action( 'wp_enqueue_scripts', 'replace_core_jquery_version' );
 
 // END ENQUEUE PARENT ACTION
-
+wp_enqueue_style ('hamburger-style', get_stylesheet_directory_uri().'/css/jquery.fatNav.min.css', array('theme-style'));
 wp_enqueue_style ('vt-custom-style', get_stylesheet_directory_uri().'/vt-custom.css', array('theme-style'));
-
+wp_enqueue_script( 'hamburger-jquery', get_stylesheet_directory_uri().'/js/jquery.fatNav.min.js', array('jquery'));
 wp_enqueue_script( 'vt-custom-jquery', get_stylesheet_directory_uri().'/page.js', array('jquery'), '1.0.0', true );
 
 function mce_mod( $init ) {
