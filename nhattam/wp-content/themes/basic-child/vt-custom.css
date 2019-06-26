@@ -547,7 +547,7 @@ body .home-customer.themify_builder_slider_wrap.themify_builder_slider_vertical 
 }
 .home-row06 .row_inner {
   padding: 50px 50px 50px 190px;
-  background: url(http://localhost/nhattam/wp-content/uploads/handshake.jpg) no-repeat left top;
+  background: url(../../uploads/handshake.jpg) no-repeat left top;
   background-color: #fff;
 }
 .module.home-custom-text {
@@ -1677,7 +1677,9 @@ body.error404 .page-title {
   color:#333;
 }
 /* /loading */
-
+body a.hamburger {
+  display: none; 
+}
 /*===================================================================
 ==============================     WIDTH 1024px     =================
 ===================================================================*/
@@ -1729,9 +1731,24 @@ body.error404 .page-title {
    	padding: 50px 0 20px; 
   }
 }/* #1024px */
+/*===================================================================
+==============================     WIDTH 980px     =================
+===================================================================*/
 
-
-
+@media screen and (max-width: 980px) {
+  body a.hamburger {
+    display: block;
+    left: initial;
+    right: 3%;
+    top: 10px;
+  }
+  body.mobile_menu_active .mobile-button {
+   	display: none; 
+  }
+  body.mobile_menu_active #header {
+   	padding-top: 0; 
+  }
+}/* #980px */
 
 
 
