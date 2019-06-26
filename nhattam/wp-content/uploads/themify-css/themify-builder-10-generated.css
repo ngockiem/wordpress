@@ -1,5 +1,7 @@
 .themify_builder_10_row.module_row_0.module_row{background-repeat: repeat;background-attachment: scroll;background-position: center center}
 .module_row_0 .module_column_0.tb_10_column.module_column{background-repeat: repeat;background-attachment: scroll;background-position: center center}
+@media screen and (max-width: 680px) {.module_row_0 .module_column_0.tb_10_column.module_column{background-repeat: repeat;background-attachment: scroll;background-position: center center}
+}
 .themify_builder .text-10-0-1-0.module-text{background-repeat: repeat}
 .themify_builder .feature-10-0-1-1.module-feature{background-repeat: repeat}
 .themify_builder .feature-10-0-1-2.module-feature{background-repeat: repeat}
