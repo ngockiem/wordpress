@@ -99,26 +99,10 @@ global $themify; ?>
 
 	</div>
 	<!-- /#headerwrap -->
+
 <?php if(is_single() || is_archive() ): ?>
-
-
-
-
-
-
-<?php /* echo do_shortcode('[themify_layout_part id="320"]'); */ ?>
-<?php $cate_data = get_the_category();
-	echo '<pre>';
-	print_r($cate_data[0]->slug);
-	echo "</pre>";
-
-?>
-  <?php if($cate_data[0]->slug == 'tin-tuc'): ?>
-      <?php echo do_shortcode('[themify_layout_part id="376"]'); ?>
-  <?php endif; ?>
-  <?php if($cate_data[0]->slug == 'san-pham'): ?>
-      <?php echo do_shortcode('[themify_layout_part id="320"]'); ?>
-  <?php endif; ?>
+<?php echo do_shortcode('[themify_layout_part id="320"]'); ?>
 <?php endif; ?>
+
 	<div id="body" class="clearfix">
     <?php themify_layout_before(); //hook ?>
