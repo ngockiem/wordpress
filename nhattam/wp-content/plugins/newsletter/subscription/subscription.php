@@ -60,6 +60,13 @@ class NewsletterSubscription extends NewsletterModule {
         if (isset($_GET['page']) && $_GET['page'] === 'newsletter_subscription_forms') {
             header('X-XSS-Protection: 0');
         }
+	    // Add custom blocks to Gutenberg
+        wp_enqueue_script(
+		    'tnp-blocks',
+		    NEWSLETTER_URL . '/includes/tnp-blocks.js',
+		    array('wp-blocks', 'wp-element', 'wp-editor'),
+		    true
+	    );
     }
 
     function hook_wp_enqueue_scripts() {
@@ -483,7 +490,6 @@ class NewsletterSubscription extends NewsletterModule {
         $this->add_admin_page('profile', 'Subscription Form');
         $this->add_admin_page('forms', 'Forms');
         $this->add_admin_page('lists', 'Lists');
-        $this->add_admin_page('lists-edit', 'List edit');
         $this->add_admin_page('template', 'Template');
     }
 
@@ -1537,10 +1543,15 @@ class NewsletterSubscription extends NewsletterModule {
 
         $buffer .= '<div class="tnp-field tnp-field-button">';
 
+        $button_style = '';
+	    if (!empty($attrs['button_color'])) {
+		    $button_style = 'style="background-color:' . esc_attr( $attrs['button_color'] ) . '"';
+	    }
+
         if (strpos($options_profile['subscribe'], 'http') === 0) {
             $buffer .= '<input class="tnp-submit-image" type="image" src="' . esc_attr($options_profile['subscribe']) . '">' . "\n";
         } else {
-            $buffer .= '<input class="tnp-submit" type="submit" value="' . esc_attr($options_profile['subscribe']) . '">' . "\n";
+            $buffer .= '<input class="tnp-submit" type="submit" value="' . esc_attr($options_profile['subscribe']) . '" ' . $button_style .'>' . "\n";
         }
 
         $buffer .= "</div>\n</form>\n";
@@ -1629,12 +1640,15 @@ class NewsletterSubscription extends NewsletterModule {
     }
 
     function get_subscription_form_minimal($attrs) {
+
         $language = $this->get_current_language();
         if (!is_array($attrs)) {
             $attrs = array();
         }
         $options_profile = $this->get_options('profile', $language);
-        $attrs = array_merge(array('class' => '', 'referrer' => 'minimal', 'button' => $options_profile['subscribe'], 'placeholder' => $options_profile['email']), $attrs);
+        $attrs = array_merge(array('class' => '', 'referrer' => 'minimal',
+                                   'button' => $options_profile['subscribe'], 'button_color' => '',
+                                   'button_radius' => '', 'placeholder' => $options_profile['email']), $attrs);
 
         $form = '';
         $form .= '<div class="tnp tnp-subscription-minimal ' . $attrs['class'] . '">';
@@ -1648,7 +1662,8 @@ class NewsletterSubscription extends NewsletterModule {
         $form .= '<input type="hidden" name="nr" value="' . esc_attr($attrs['referrer']) . '">';
         $form .= '<input type="hidden" name="nlang" value="' . esc_attr($language) . '">' . "\n";
         $form .= '<input class="tnp-email" type="email" required name="ne" value="" placeholder="' . esc_attr($attrs['placeholder']) . '">';
-        $form .= '<input class="tnp-submit" type="submit" value="' . esc_attr($attrs['button']) . '">';
+        $form .= '<input class="tnp-submit" type="submit" value="' . esc_attr($attrs['button']) . '"'
+                 .' style="background-color:' . esc_attr($attrs['button_color']) . '">';
        
         $privacy_field = $this->get_privacy_field();
         if (!empty($privacy_field)) {

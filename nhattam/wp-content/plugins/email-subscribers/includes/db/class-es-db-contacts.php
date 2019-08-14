@@ -318,8 +318,13 @@ class ES_DB_Contacts {
 		$contact_id = $wpdb->get_var( $sql );
 		$data       = array();
 		if ( ! empty( $contact_id ) ) {
+
+			if ( ! is_array( $list_id ) ) {
+				$list_id = array( $list_id );
+			}
+
 			$list_query         = "SELECT count(*) as count FROM " . IG_LISTS_CONTACTS_TABLE . " WHERE list_id IN (%s) AND contact_id = %s";
-			$list_sql           = $wpdb->prepare( $list_query, implode( ',', $list_id ), $contact_id );
+			$list_sql           = $wpdb->prepare( $list_query, implode( ', ', $list_id ), $contact_id );
 			$data['contact_id'] = $contact_id;
 			$list_contact_count = $wpdb->get_var( $list_sql );
 			if ( ! empty( $list_contact_count ) ) {
@@ -330,8 +335,6 @@ class ES_DB_Contacts {
 		}
 
 		return $data;
-
-
 	}
 
 	public static function get_email_details_map() {

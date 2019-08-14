@@ -60,7 +60,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 							<td class="es-emm-optin">
 								<form name="klawoo_subscribe" action="#" method="POST" accept-charset="utf-8">
 									<input class="es-ltr" type="text" name="name" id="name" placeholder="Your Name" />
-									<input class="es-ltr" type="text" name="email" id="email" placeholder="Your Email" required /> <br />
+									<input class="es-ltr" type="text" name="email" id="email" placeholder="Your Email" required value="<?php echo $admin_email;?>"/> <br />
 									<input type="hidden" name="list" value="hN8OkYzujUlKgDgfCTEcIA"/>
 		                            <input type="checkbox" name="es-gdpr-agree" id ="es-gdpr-agree" value="1" required="required">
 		                            <label for="es-gdpr-agree"><?php echo sprintf(__( 'I have read and agreed to your %s.', 'email-subscribers' ), '<a href="https://www.icegram.com/privacy-policy/" target="_blank">' . __( 'Privacy Policy', 'email-subscribers' ) . '</a>' ); ?></label>

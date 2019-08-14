@@ -1189,4 +1189,25 @@ div.es .last {
 .email-subscribers_page_es_pricing #wpwrap #wpcontent {
     background-color: #f1f1f1;
 }
-
+.es-floting-button{
+    width: 10em;
+    padding: 0.5em;
+    text-align: center;
+    margin: 0px 1em !important;
+    float: right;
+    /*background: #03a025;*/
+    background: #00a0d2;
+    color: white;
+    border: none;
+    font-size: 1.3em;
+}
+.es-floting-button a{
+    text-decoration: none;
+    color: inherit;
+    }
+.es-floting-button:hover{
+    background: #FFF;
+    /*color: #03a025;*/
+    color: #00a0d2;
+    font-weight: bold;
+}

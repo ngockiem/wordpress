@@ -4,8 +4,8 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Author URI: https://www.icegram.com/
 Tags: subscription, newsletter, email marketing, post notification, email newsletter form, email signup, email widget, newsletter signup, subscribe, subscription form, bulk emails, signup form, list builder, lead generation, welcome email, contacts
 Requires at least: 3.9
-Tested up to: 5.2.1
-Stable tag: 4.1.4
+Tested up to: 5.2.2
+Stable tag: 4.1.11
 License: GPLv3
 License URI: http://www.gnu.org/licenses
 
@@ -304,6 +304,44 @@ Use our free plugin [Email Subscribers - Group Selector](https://wordpress.org/p
 9. Admin page - Settings Tab 4 - Security Settings
 
 == Changelog ==
+
+= 4.1.11 (02.08.2019) =
+* Fix: Send multiple email notification issue
+
+= 4.1.10 (31.07.2019) =
+* Update: Added viewed count on reports page
+* Fix: Shortcodes were not working in email templates
+* Fix: Viewed status was not getting updated
+* Fix: Migration issues in reports
+
+= 4.1.9 (25.07.2019) =
+* Update: Admin notification will be sent out only after contacts confirm their subscription
+* Update: Show Post Notifications categories in campaigns view
+* Fix: Sort contacts by name
+* Fix: Email Notification formatting issue
+
+= 4.1.8 (16.07.2019) =
+* New: Now, admin can add/ edit First Name & Last Name of subscribers.
+* Fix: Fixed Vulnerabilities (Thanks Tin Duong of Fortinet's FortiGuard Labs, WordPress Plugin Review Team & Ihor Voschyk for reporting)
+
+= 4.1.7 (15.07.2019) =
+* Update: Now, able to sort reports by Subject, Status, Start Date, End Date & Total Contacts
+* Update: Now, able to sort forms by Name & Created date
+* Update: Now, email template will pick up the latest content while email sending
+* Fix: Importing issue
+* Fix: Migration issue
+* Fix: Fixed Vulnerability
+
+= 4.1.6 (01.07.2019) =
+* Update: Added sorting for name field in Audience tab
+* Fix: Warning: Illegal string offset 'es_registered'
+* Fix: Set list name blank in campaign list page
+* Fix: Contacts sort by email was not working.
+
+= 4.1.5 (20.06.2019) =
+* Update: Added "Opt-In Type" column in exported contacts lists
+* Update: Allow to send broadcast only if contacts are available in list
+* Fix: "Select the list" error
 
 = 4.1.4 (13.06.2019) =
 * New: Added First Name, Last Name in exported csv file

@@ -119,10 +119,10 @@ function ig_es_render_general_feedback_widget() {
 			'event'             => $event,
 			'title'             => "Have feedback or question for us?",
 			'position'          => 'center',
-			'width'             => 600,
+			'width'             => 700,
 			'force'             => true,
 			'confirmButtonText' => __( 'Send', 'email-subscribers' ),
-			'consent_text'      => __( sprintf( 'By clicking on send button you are agree to our <a href="%s" target="_blank">Privacy Policy</a>', "https://www.icegram.com/privacy-policy/" ), 'email-subscribers' ),
+			'consent_text'      => __( 'Allow Email Subscribers to track plugin usage. We guarantee no sensitive data is collected.', 'email-subscribers' ),
 			'email'             => get_option( 'admin_email' ),
 			'name'              => ''
 		);

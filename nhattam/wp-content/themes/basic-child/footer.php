@@ -23,7 +23,7 @@
 				<div class="ft-col4-1 first">
 					<div class="ft-title">GIỚI THIỆU CÔNG TY</div>
 					<div class="ft-logo"><a href="<?php echo home_url(); ?>"><img src="<?php echo content_url(); ?>/uploads/ft-logo.svg"></a></div>
-					<div class="ft-text">Chúng tôi một trong những công ty hàng đầu về cung cấp các loại đá xây dựng, cát nghiền chất lượng cao, đảm trách việc vận chuyển đến công trình, sản xuất bê tông và các sản phẩm từ xi măng và thạch cao. Chúng tôi tự hào vì đã hợp tác với nhiều khách hàng</div>
+					<div class="ft-text">Công ty bê tông Nhất Tâm là công ty hàng đầu về cung cấp các loại đá xây dựng, cát nghiền chất lượng cao, đảm trách việc vận chuyển đến công trình, sản xuất bê tông và các sản phẩm từ xi măng và thạch cao. Chúng tôi tự hào vì đã hợp tác với nhiều khách hàng</div>
 				</div>
 				<div class="ft-col4-1">
 					<div class="ft-title">LIÊN KẾT TRANG</div>

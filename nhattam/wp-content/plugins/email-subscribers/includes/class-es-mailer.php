@@ -58,7 +58,6 @@ class ES_Mailer {
 			if ( $send ) {
 				ES_DB_Sending_Queue::update_sent_status( $mail['id'], 'Sent' );
 			}
-
 		}
 
 	}

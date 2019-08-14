@@ -97,6 +97,17 @@ class es_cls_dbquery {
 					ES_Mailer::send( $email, $subject, $content );
 				}
 
+				$list_name     = ES_DB_Lists::get_list_id_name_map( $list_id );
+				$template_data = array(
+					'name'       => $name,
+					'first_name' => $sub_data['first_name'],
+					'last_name'  => $sub_data['last_name'],
+					'email'      => $email,
+					'list_name'  => $list_name
+				);
+
+				ES_Common::send_signup_notification_to_admins( $template_data );
+
 			} else {
 
 				// Send Confirmation mail
@@ -106,16 +117,6 @@ class es_cls_dbquery {
 				ES_Mailer::send( $email, $subject, $content );
 			}
 
-			$list_name     = ES_DB_Lists::get_list_id_name_map( $list_id );
-			$template_data = array(
-				'name'       => $name,
-				'first_name' => $sub_data['first_name'],
-				'last_name'  => $sub_data['last_name'],
-				'email'      => $email,
-				'list_name'  => $list_name
-			);
-
-			ES_Common::send_signup_notification_to_admins( $template_data );
 
 		}
 	}

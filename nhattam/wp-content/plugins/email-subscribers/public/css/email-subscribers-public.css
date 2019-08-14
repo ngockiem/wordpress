@@ -49,6 +49,6 @@
     margin-bottom: 0.6em;
 }
 
-.ig-es-form-list-selection tr {
-    border-bottom: none;
+.ig-es-form-list-selection, .ig-es-form-list-selection td, .ig-es-form-list-selection tr {
+    border: none;
 }

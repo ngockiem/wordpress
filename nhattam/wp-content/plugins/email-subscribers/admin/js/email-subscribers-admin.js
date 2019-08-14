@@ -138,8 +138,8 @@
 			});
 
 
-			var _href = $('#ig_es_export_link_select_list').attr("href");
 			// Select List ID for Export
+			var _href = $('#ig_es_export_link_select_list').attr("href");
 			$('#ig_es_export_list_dropdown').change(function () {
 				var selected_list_id = $(this).val();
 
@@ -165,10 +165,45 @@
 				});
 
 			});
+
+			// Broadcast Setttings
+			// Get count by list
+			$('#ig_es_campaign_submit_button').attr("disabled", true);
+			$('#ig_es_broadcast_list_ids').change(function(){
+				var selected_list_id = $(this).val();
+
+				// Update total count in lists
+				var params = {
+					action: 'count_contacts_by_list',
+					list_id: selected_list_id,
+					status: 'subscribed'
+				};
+
+				$.ajax({
+					method: 'POST',
+					url: ajaxurl,
+					async: false,
+					data: params,
+					success: function (response) {
+						if (response !== '') {
+							response = JSON.parse(response);
+							if(response.hasOwnProperty('total')) {
+								var total = response.total;
+								$('#ig_es_total_contacts').text(response.total);
+								if(total == 0 ) {
+									$('#ig_es_campaign_submit_button').attr("disabled", true);
+								} else {
+									$('#ig_es_campaign_submit_button').attr("disabled", false);
+								}
+							}
+						}
+					}
+				});
+			});
 		});
 
 
-	// Get the element with id="defaultOpen" and click on it
+
 
 
 })(jQuery);

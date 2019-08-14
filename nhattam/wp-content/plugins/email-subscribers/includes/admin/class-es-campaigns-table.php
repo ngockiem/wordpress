@@ -121,15 +121,26 @@ class ES_Campaigns_Table extends WP_List_Table {
 
 		if ( ! $do_count_only ) {
 
-			// Prepare Order by clause
-			$order_by_clause = '';
-			$order           = ! empty( $order ) ? ' ' . esc_sql( $order ) : ' DESC';
-			$order_by_clause = ' ORDER BY ' . esc_sql( 'created_at' ) . ' ' . $order;
-			$order_by_clause = ! empty( $order_by ) ? $order_by_clause . ' , ' . esc_sql( $order_by ) . ' ' . $order : $order_by_clause;
+			$order                 = ! empty( $order ) ? strtolower( $order ) : 'desc';
+			$expected_order_values = array( 'asc', 'desc' );
+			if ( ! in_array( $order, $expected_order_values ) ) {
+				$order = 'desc';
+			}
+
+			$default_order_by = esc_sql( 'created_at' );
+
+			$expected_order_by_values = array( 'base_template_id', 'type' );
+			if ( ! in_array( $order_by, $expected_order_by_values ) ) {
+				$order_by_clause = " ORDER BY {$default_order_by} DESC";
+			} else {
+				$order_by        = esc_sql( $order_by );
+				$order_by_clause = " ORDER BY {$order_by} {$order}, {$default_order_by} DESC";
+			}
 
 			$sql .= $order_by_clause;
 			$sql .= " LIMIT $per_page";
 			$sql .= ' OFFSET ' . ( $page_number - 1 ) * $per_page;
+
 
 			$result = $wpdb->get_results( $sql, 'ARRAY_A' );
 		} else {
@@ -187,6 +198,14 @@ class ES_Campaigns_Table extends WP_List_Table {
 				$type = ucwords( str_replace( '_', ' ', $type ) );
 
 				return $type;
+
+			case 'categories':
+				if ( ! empty( $item[ $column_name ] ) ) {
+					return implode( ', ', ES_Common::convert_categories_string_to_array( $item[ $column_name ] ) );
+				} else {
+					return '-';
+				}
+
 			default:
 				return $item[ $column_name ]; //Show the whole array for troubleshooting purposes
 		}
@@ -205,7 +224,6 @@ class ES_Campaigns_Table extends WP_List_Table {
 		);
 	}
 
-
 	/**
 	 * Method for name column
 	 *
@@ -217,9 +235,10 @@ class ES_Campaigns_Table extends WP_List_Table {
 
 		$type = $item['type'];
 
-		if ( $type === 'post_notification' ) {
 
-			$nonce = wp_create_nonce( 'es_post_notification' );
+		$nonce = wp_create_nonce( 'es_post_notification' );
+
+		if ( $type === 'post_notification' ) {
 
 			$template = get_post( $item['base_template_id'] );
 
@@ -229,12 +248,12 @@ class ES_Campaigns_Table extends WP_List_Table {
 				$title = '';
 			}
 
-			if ( ! empty( $item['type'] ) && $item['type'] == 'post_notification' ) {
-				$actions ['edit'] = sprintf( __('<a href="?page=%s&action=%s&list=%s&_wpnonce=%s">Edit</a>', 'email-subscribers' ), esc_attr( 'es_notifications' ), 'edit', absint( $item['id'] ), $nonce );
-			}
+			$slug = esc_attr('es_notifications');
 
-			$actions['delete'] = sprintf( __('<a href="?page=%s&action=%s&list=%s&_wpnonce=%s" onclick="return checkDelete()">Delete</a>', 'email-subscribers'), esc_attr( 'es_campaigns' ), 'delete', absint( $item['id'] ), $nonce );
-			$title             = $title . $this->row_actions( $actions );
+			$actions ['edit']  = sprintf( __( '<a href="?page=%s&action=%s&list=%s&_wpnonce=%s">Edit</a>', 'email-subscribers' ), $slug, 'edit', absint( $item['id'] ), $nonce );
+			$actions['delete'] = sprintf( __( '<a href="?page=%s&action=%s&list=%s&_wpnonce=%s" onclick="return checkDelete()">Delete</a>', 'email-subscribers' ), esc_attr( 'es_campaigns' ), 'delete', absint( $item['id'] ), $nonce );
+
+			$title .= $this->row_actions( $actions );
 		} else {
 			$title = $item['name'];
 		}
@@ -254,6 +273,7 @@ class ES_Campaigns_Table extends WP_List_Table {
 			'base_template_id' => __( 'Name', 'email-subscribers' ),
 			'type'             => __( 'Type', 'email-subscribers' ),
 			'list_ids'         => __( 'List', 'email-subscribers' ),
+			'categories'       => __( 'Categories', 'email-subscribers' ),
 			'status'           => __( 'Status', 'email-subscribers' )
 		);
 
@@ -268,9 +288,10 @@ class ES_Campaigns_Table extends WP_List_Table {
 	 */
 	public function get_sortable_columns() {
 		$sortable_columns = array(
-			'base_template_id' => array( 'base_template_id', true ),
-			'list_ids'         => array( 'list_ids', true ),
-			'status'           => array( 'status', true )
+			//'base_template_id' => array( 'base_template_id', true ),
+			//'list_ids'         => array( 'list_ids', true ),
+			//'status'           => array( 'status', true )
+			'type' => array( 'type', true )
 		);
 
 		return $sortable_columns;
@@ -293,7 +314,7 @@ class ES_Campaigns_Table extends WP_List_Table {
         <p class="search-box">
             <label class="screen-reader-text" for="<?php echo $input_id ?>"><?php echo $text; ?>:</label>
             <input type="search" id="<?php echo $input_id ?>" name="s" value="<?php _admin_search_query(); ?>"/>
-			<?php submit_button( __('Search Campaigns', 'email-subscribers'), 'button', false, false, array( 'id' => 'search-submit' ) ); ?>
+			<?php submit_button( __( 'Search Campaigns', 'email-subscribers' ), 'button', false, false, array( 'id' => 'search-submit' ) ); ?>
         </p>
 	<?php }
 
@@ -348,19 +369,19 @@ class ES_Campaigns_Table extends WP_List_Table {
 
 			$ids = esc_sql( Email_Subscribers::get_request( 'campaigns' ) );
 
-			if(is_array($ids) && count($ids) > 0) {
+			if ( is_array( $ids ) && count( $ids ) > 0 ) {
 
-                $deleted = $this->delete_list( $ids );
+				$deleted = $this->delete_list( $ids );
 
-                if ( $deleted ) {
-                    $message = __( 'Campaign(s) have been deleted successfully!', 'email-subscribers' );
-                    ES_Common::show_message( $message );
-                }
-            } else {
-			    
+				if ( $deleted ) {
+					$message = __( 'Campaign(s) have been deleted successfully!', 'email-subscribers' );
+					ES_Common::show_message( $message );
+				}
+			} else {
+
 				$message = __( 'Please check campaign(s) to delete.', 'email-subscribers' );
 				ES_Common::show_message( $message, 'error' );
-            }
+			}
 
 
 		}

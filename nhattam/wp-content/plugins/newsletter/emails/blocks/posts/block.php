@@ -3,7 +3,7 @@
  * Name: Last posts
  * Section: content
  * Description: Last posts list with different layouts
- * Content: dynamic
+ * Type: dynamic
  */
 
 /* @var $options array */
@@ -11,7 +11,6 @@
 
 $defaults = array(
     'title' => 'Last news',
-    'block_background' => '#E6E9ED',
     'color' => '#999999',
     'font_family' => 'Helvetica, Arial, sans-serif',
     'font_size' => '16',
@@ -59,18 +58,19 @@ if (!empty($options['tags'])) {
 
 // Filter by time?
 //$options['block_last_run'] = time();
-if (!empty($options['block_last_run'])) {
+if (!empty($context['last_run'])) {
     $filters['date_query'] = array(
-        'after' => gmdate('c', $options['block_last_run'])
+        'after' => gmdate('c', $context['last_run'])
     );
 }
 
 $posts = Newsletter::instance()->get_posts($filters, $options['language']);
 
-// TODO: Check the context or not?
-if (empty($posts) && $options['block_context'] == 'automated') {
+if (empty($posts) && !empty($context['last_run'])) {
     return;
 }
+
+$out['subject'] = $posts[0]->post_title;
 
 $button_background = $options['button_background'];
 $button_label = $options['button_label'];

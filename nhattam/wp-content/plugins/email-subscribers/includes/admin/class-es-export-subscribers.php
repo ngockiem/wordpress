@@ -85,6 +85,7 @@ class Export_Subscribers {
 			'all'          => __( 'All Contacts', 'email-subscribers' ),
 			'subscribed'   => __( 'Subscribed Contacts', 'email-subscribers' ),
 			'unsubscribed' => __( 'Unsubscribed Contacts', 'email-subscribers' ),
+			//'confirmed'    => __( 'Confirmed Contacts', 'email-subscribers' ),
 			'unconfirmed'  => __( 'Unconfirmed Contacts', 'email-subscribers' ),
 			'select_list'  => $list_dropdown_html
 		);
@@ -166,6 +167,10 @@ class Export_Subscribers {
 				$sql = $wpdb->prepare( "SELECT COUNT(email) FROM " . IG_CONTACTS_TABLE . " WHERE status = %s", 'unsubscribed' );
 				break;
 
+			case 'confirmed':
+				$sql = $wpdb->prepare( "SELECT COUNT(*) FROM " . IG_LISTS_CONTACTS_TABLE . " WHERE status = %s AND optin_type = %d", 'subscribed', IG_DOUBLE_OPTIN );
+				break;
+
 			case 'unconfirmed':
 				$sql = $wpdb->prepare( "SELECT count(contact_id) FROM " . IG_LISTS_CONTACTS_TABLE . " WHERE status = %s", 'unconfirmed' );
 				break;
@@ -239,6 +244,8 @@ class Export_Subscribers {
 			$query = $wpdb->prepare( "SELECT * FROM {$contact_lists_table} WHERE status = %s", 'subscribed' );
 		} elseif ( 'unsubscribed' === $status ) {
 			$query = $wpdb->prepare( "SELECT * FROM {$contact_lists_table} WHERE status = %s", 'unsubscribed' );
+		} elseif ( 'confirmed' === $status ) {
+			$query = $wpdb->prepare( "SELECT * FROM {$contact_lists_table} WHERE status = %s AND optin_type = %d ", 'subscribed', IG_DOUBLE_OPTIN );
 		} elseif ( 'unconfirmed' === $status ) {
 			$query = $wpdb->prepare( "SELECT * FROM {$contact_lists_table} WHERE status = %s", 'unconfirmed' );
 		} elseif ( 'select_list' === $status ) {
@@ -261,8 +268,9 @@ class Export_Subscribers {
 				}
 
 				$contact_list_map[ $result['contact_id'] ][] = array(
-					'status'  => $result['status'],
-					'list_id' => $result['list_id']
+					'status'     => $result['status'],
+					'list_id'    => $result['list_id'],
+					'optin_type' => $result['optin_type']
 				);
 			}
 
@@ -282,6 +290,7 @@ class Export_Subscribers {
 				__( 'Email', 'email-subscribers' ),
 				__( 'List', 'email-subscribers' ),
 				__( 'Status', 'email-subscribers' ),
+				__( 'Opt-In Type', 'email-subscribers' ),
 				__( 'Created On', 'email-subscribers' )
 			);
 
@@ -300,6 +309,7 @@ class Export_Subscribers {
 					foreach ( $contact_list_map[ $contact_id ] as $list_details ) {
 						$data['list']       = $lists_id_name_map[ $list_details['list_id'] ];
 						$data['status']     = ucfirst( $list_details['status'] );
+						$data['optin_type'] = ($list_details['optin_type'] == 1) ? 'Single Opt-In' : 'Double Opt-In';
 						$data['created_at'] = $subscriber['created_at'];
 						$csv_output         .= '"' . implode( '", "', $data ) . '"';
 						$csv_output         .= "\n";

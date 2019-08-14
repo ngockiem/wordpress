@@ -19,6 +19,7 @@ class ES_Cron {
 	}
 
 	public function handle_cron_request( $es = '', $guid = '' ) {
+
 		$is_wp_cron = false;
 		if ( ! empty( $es ) ) {
 			$es_request = $es;
@@ -27,13 +28,20 @@ class ES_Cron {
 			$es_request = Email_Subscribers::get_request( 'es' );
 		}
 
-		$ig_es_disable_wp_cron = get_option( 'ig_es_disable_wp_cron', 'no');
-		if( $is_wp_cron && 'yes' === $ig_es_disable_wp_cron ) return;
+		// It's not a cron request. Say Goodbye!
+		if ( 'cron' !== $es_request ) {
+			return;
+		}
+
+		$ig_es_disable_wp_cron = get_option( 'ig_es_disable_wp_cron', 'no' );
+
+		if ( $is_wp_cron && 'yes' === $ig_es_disable_wp_cron ) {
+			return;
+		}
 
 		$self = ! empty( $_REQUEST['self'] ) ? $_REQUEST['self'] : 0;
 
 		if ( 'cron' === $es_request ) {
-
 			/*
 			$ig_es_last_cron_run = get_option( 'ig_es_last_cron_run', true );
 			$time_diff           = ( time() - $ig_es_last_cron_run );
@@ -77,22 +85,22 @@ class ES_Cron {
 									}
 
 									/**
-									 * - Get GUID from sentdetails report which are in queue
-									 * - Get subscribers from the deliverreport table based on fetched guid
+									 * - Get GUID from ig_es_mailing_queue table which are in queue
+									 * - Get contacts from the ig_es_sending_queue table based on fetched guid
 									 * - Prepare email content
-									 * - Send emails based on fetch subscribers
-									 * - Update status in sentdetails table
-									 * - Update status in deliver report table
+									 * - Send emails based on fetched contacts
+									 * - Update status in ig_es_mailing_queue table
+									 * - Update status in ig_es_sending_queue table
 									 */
 
 									// Get GUID from sentdetails report which are in queue
-									$campign_hash = Email_Subscribers::get_request( 'campaign_hash' );
+									$campaign_hash = Email_Subscribers::get_request( 'campaign_hash' );
 
 									if ( $self ) {
 										$es_c_croncount = ceil( $es_c_croncount / 4 ); // Send 1/4 of total limit
 									}
 
-									$notification      = ES_DB_Mailing_Queue::get_notification_to_be_sent( $campign_hash );
+									$notification      = ES_DB_Mailing_Queue::get_notification_to_be_sent( $campaign_hash );
 									$notification_guid = isset( $notification['hash'] ) ? $notification['hash'] : null;
 
 									if ( ! is_null( $notification_guid ) ) {
@@ -108,15 +116,16 @@ class ES_Cron {
 												$ids[] = $email['id'];
 											}
 
-											$updated = ES_DB_Sending_Queue::update_sent_status( $ids, 'Sending' );
+											$updated = ES_DB_Sending_Queue::update_sent_status($ids, 'Sending');
 
-											if ( $updated ) {
+											// Send out emails
+											if($updated) {
 												ES_Mailer::prepare_and_send_email( $emails, $notification );
-												ES_DB_Sending_Queue::update_sent_status( $ids, 'Sent' );
+												ES_DB_Sending_Queue::update_sent_status($ids, 'Sent');
 											}
 
-											$total_remaining_emails     = ES_DB_Sending_Queue::get_total_emails_to_be_sent_by_hash( $notification_guid );
-											$remainig_emails_to_be_sent = ES_DB_Sending_Queue::get_total_emails_to_be_sent();
+											$total_remaining_emails      = ES_DB_Sending_Queue::get_total_emails_to_be_sent_by_hash( $notification_guid );
+											$remaining_emails_to_be_sent = ES_DB_Sending_Queue::get_total_emails_to_be_sent();
 
 											// No emails left for the $notification_guid??? Send admin notification for the
 											// Completion of a job
@@ -133,6 +142,11 @@ class ES_Cron {
 
 														if ( ! empty( $template ) ) {
 															$subject      = get_option( 'ig_es_cron_admin_email_subject', __( 'Campaign Sent!', 'email-subscribers' ) );
+															$notification = ES_DB_Mailing_Queue::get_notification_by_hash( $notification_guid );
+															if ( isset( $notification['subject'] ) ) {
+																$subject = str_replace( '{{SUBJECT}}', $notification['subject'], $subject );
+															}
+
 															$admin_emails = explode( ',', $admin_email_addresses );
 															foreach ( $admin_emails as $admin_email ) {
 																$admin_email = trim( $admin_email );
@@ -144,7 +158,7 @@ class ES_Cron {
 											}
 
 											$response['total_emails_sent']        = $total_emails;
-											$response['es_remaining_email_count'] = $remainig_emails_to_be_sent;
+											$response['es_remaining_email_count'] = $remaining_emails_to_be_sent;
 											$response['message']                  = 'EMAILS_SENT';
 											$response['status']                   = 'SUCCESS';
 											// update last cron run time

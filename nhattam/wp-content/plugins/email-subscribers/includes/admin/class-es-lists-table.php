@@ -241,7 +241,7 @@ class ES_Lists_Table extends WP_List_Table {
 
 		global $wpdb;
 
-		$list_data['name']       = $data['list_name'];
+		$list_data['name']       = sanitize_text_field($data['list_name']);
 		$list_data['slug']       = sanitize_title( $list_data['name'] );
 		$list_data['created_at'] = ig_get_current_date_time();
 
@@ -301,10 +301,22 @@ class ES_Lists_Table extends WP_List_Table {
 		if ( ! $do_count_only ) {
 
 			// Prepare Order by clause
-			$order_by_clause = '';
-			$order           = ! empty( $order ) ? ' ' . esc_sql( $order ) : ' DESC';
-			$order_by_clause = ' ORDER BY ' . esc_sql( 'created_at' ) . ' ' . $order;
-			$order_by_clause = ! empty( $order_by ) ? $order_by_clause . ' , ' . esc_sql( $order_by ) . ' ' . $order : $order_by_clause;
+			$order = ! empty( $order ) ? strtolower($order) : 'desc';
+			$expected_order_values = array('asc', 'desc');
+			if(!in_array($order, $expected_order_values)) {
+				$order = 'desc';
+			}
+
+			$default_order_by = esc_sql( 'created_at' );
+
+			$expected_order_by_values = array( 'name', 'created_at' );
+
+			if ( ! in_array( $order_by, $expected_order_by_values ) ) {
+				$order_by_clause = " ORDER BY {$default_order_by} DESC";
+			} else {
+				$order_by        = esc_sql( $order_by );
+				$order_by_clause = " ORDER BY {$order_by} {$order}, {$default_order_by} DESC";
+			}
 
 			$sql    .= $order_by_clause;
 			$sql    .= " LIMIT $per_page";
@@ -362,7 +374,7 @@ class ES_Lists_Table extends WP_List_Table {
 
 		switch ( $column_name ) {
 			case 'active_contacts':
-				$count = ES_DB_Lists_Contacts::get_total_count_by_list( $item['id'], 'active' );
+				$count = ES_DB_Lists_Contacts::get_total_count_by_list( $item['id'], 'subscribed' );
 				if ( $count > 0 ) {
 					$url   = admin_url( 'admin.php?page=es_subscribers&filter_by_status=subscribed&filter_by_list_id=' . $item['id'] );
 					$count = sprintf( __( '<a href="%s" target="_blank">%d</a>', 'email-subscribers' ), $url, $count );
@@ -453,7 +465,8 @@ class ES_Lists_Table extends WP_List_Table {
 	 */
 	public function get_sortable_columns() {
 		$sortable_columns = array(
-			'name' => array( 'name', true ),
+			'name'       => array( 'name', true ),
+			'created_at' => array( 'created_at', true ),
 		);
 
 		return $sortable_columns;
@@ -486,7 +499,6 @@ class ES_Lists_Table extends WP_List_Table {
 	public function prepare_items() {
 
 		$this->_column_headers = $this->get_column_info();
-
 
 		/** Process bulk action */
 		$this->process_bulk_action();

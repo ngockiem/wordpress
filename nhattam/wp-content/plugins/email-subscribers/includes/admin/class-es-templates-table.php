@@ -16,13 +16,43 @@ class ES_Templates_Table {
 		add_filter( 'manage_edit-es_template_columns', array( $this, 'add_new_columns' ), 10, 1 );
 		add_action( 'manage_posts_custom_column', array( $this, 'custom_columns' ) );
 		add_action( 'admin_footer', array( $this, 'add_custom_button' ) );
+		add_action( 'edit_form_after_title', array( $this, 'add_template_type' ) );
 		//duplicate template
 		add_filter( 'post_row_actions', array(&$this , 'add_message_action'), 10, 2 );
 		add_action('admin_init', array(&$this ,'duplicate_message') ,10, 1);
 	}
 
+	public function add_template_type(){
+		global $post;
+		if ( ! ( is_object( $post ) && 'es_template' === $post->post_type ) ) {
+			return;
+		}
+		$values = get_post_custom( $post->ID );
+
+		$selected = isset( $values['es_template_type'] ) ? esc_attr( $values['es_template_type'][0] ) : '';
+		$template_type = array('newsletter' => __( 'Broadcast', 'email-subscribers' ) ,
+								'post_notification' => __( 'Post Notification', 'email-subscribers' )
+								);
+		$template_type = apply_filters( 'es_template_type', $template_type );
+	?>
+ 		<p>
+            <label for="es_template_type"><strong><?php _e( 'Select your Email Template Type', 'email-subscirbers' ); ?></strong></label></br>
+            <select name="es_template_type" id="es_template_type">
+            	<?php 
+            		if(!empty($template_type)){
+            			foreach ($template_type as $key => $value) {
+            				echo "<option value=".$key." ".selected( $selected, $key, false ).">".$value."</option>";
+            			}
+            		}
+            	?>
+
+            </select>
+        </p>
+    <?php
+	}
+
 	public function es_template_meta_box_add() {
-		add_meta_box( 'es_template_meta_box', 'Select your Email Template Type', array( $this, 'es_template_type_meta_box' ), 'es_template', 'normal', 'high' );
+		add_meta_box( 'es_template_meta_box', 'Available Keywords', array( $this, 'es_template_type_meta_box' ), 'es_template', 'normal', 'high' );
 	}
 
 	public function es_template_type_meta_box( $post ) {
@@ -30,26 +60,13 @@ class ES_Templates_Table {
 		if ( ! ( is_object( $post ) && 'es_template' === $post->post_type ) ) {
 			return;
 		}
-
-		$values = get_post_custom( $post->ID );
-
-		$selected = isset( $values['es_template_type'] ) ? esc_attr( $values['es_template_type'][0] ) : '';
-		wp_nonce_field( 'es_template_type_nonce', 'template_type_nonce' );
 		?>
-        <p>
-            <label for="es_template_type"><? _e( 'Select your Email Template Type', 'email-subscirbers' ); ?></label>
-            <select name="es_template_type" id="es_template_type">
-                <option value="newsletter" <?php selected( $selected, 'newsletter' ); ?>><?php _e( 'Broadcast', 'email-subscribers' ) ?></option>
-                <option value="post_notification" <?php selected( $selected, 'post_notification' ); ?>><?php _e( 'Post Notification', 'email-subscribers' ) ?></option>
-            </select>
-        </p>
-
         <p id="post_notification">
-            <a href="https://www.icegram.com/documentation/es-what-are-the-available-keywords-in-the-post-notifications/?utm_source=es&amp;utm_medium=in_app&amp;utm_campaign=view_docs_help_page" target="_blank"><?php _e( 'Available Keywords', 'email-subscribers' ); ?></a> <?php _e( 'for Post Notification: ', 'email-subsribers' ); ?> {{NAME}}, {{EMAIL}},
+            <a href="https://www.icegram.com/documentation/es-what-are-the-available-keywords-in-the-post-notifications/?utm_source=es&amp;utm_medium=in_app&amp;utm_campaign=view_docs_help_page" target="_blank"><?php _e( 'Available Keywords', 'email-subscribers' ); ?></a> <?php _e( 'for Post Notification: ', 'email-subsribers' ); ?> {{FIRSTNAME}}, {{LASTNAME}}, {{NAME}}, {{EMAIL}},
             {{DATE}}, {{POSTTITLE}}, {{POSTIMAGE}}, {{POSTEXCERPT}}, {{POSTDESC}},
             {{POSTAUTHOR}}, {{POSTLINK}}, {{POSTLINK-WITHTITLE}}, {{POSTLINK-ONLY}}, {{POSTFULL}} </p>
         <p id="newsletter">
-            <a href="https://www.icegram.com/documentation/es-what-are-the-available-keywords-in-the-newsletters/?utm_source=es&amp;utm_medium=in_app&amp;utm_campaign=view_docs_help_page" target="_blank"><?php _e( 'Available Keywords', 'email-subscribers' ); ?></a> <?php _e( 'for Newsletter:', 'email-subscribers' ); ?> {{NAME}}, {{EMAIL}} </p>
+            <a href="https://www.icegram.com/documentation/es-what-are-the-available-keywords-in-the-newsletters/?utm_source=es&amp;utm_medium=in_app&amp;utm_campaign=view_docs_help_page" target="_blank"><?php _e( 'Available Keywords', 'email-subscribers' ); ?></a> <?php _e( 'for Broadcast:', 'email-subscribers' ); ?> {{FIRSTNAME}}, {{LASTNAME}}, {{NAME}}, {{EMAIL}} </p>
 		<?php
 	}
 

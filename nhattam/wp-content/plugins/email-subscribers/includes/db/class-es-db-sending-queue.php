@@ -144,11 +144,25 @@ class ES_DB_Sending_Queue {
 		if ( $notification_hash != "" ) {
 			$query  = $wpdb->prepare( "SELECT * FROM " . IG_SENDING_QUEUE_TABLE . " WHERE mailing_queue_hash = %s", array( $notification_hash ) );
 			$emails = $wpdb->get_results( $query, ARRAY_A );
+
+			// We are not migrating reports data because it caused lots of migration issues
+			// in the past. So, we are fetching reports data from older table if we don't get
+			// the data from the new table.
+
+			// This is generally fetch the data for older campaigns
+			if ( count( $emails ) == 0 ) {
+				$es_deliver_report_table = EMAIL_SUBSCRIBERS_STATS_TABLE;
+
+				$result = $wpdb->get_var( "SHOW TABLES LIKE '{$es_deliver_report_table}' " );
+				if ( $result === $es_deliver_report_table ) {
+					$query  = $wpdb->prepare( "SELECT * FROM {$es_deliver_report_table} WHERE es_deliver_sentguid = %s", array( $notification_hash ) );
+					$emails = $wpdb->get_results( $query, ARRAY_A );
+				}
+			}
 		}
 
 		return $emails;
 	}
-
 
 	public static function do_batch_insert( $delivery_data ) {
 
@@ -240,7 +254,7 @@ class ES_DB_Sending_Queue {
 
 			$total_bataches = ( $total > IG_DEFAULT_BATCH_SIZE ) ? ceil( $total / $batch_size ) : 1;
 
-			$last_sending_queue_batch_run = get_transient( 'ig_es_last_sending_queue_batch_run'. false );
+			$last_sending_queue_batch_run = get_transient( 'ig_es_last_sending_queue_batch_run' . false );
 
 			if ( false === $last_sending_queue_batch_run ) {
 				$batch_start_from = 0;
@@ -257,7 +271,7 @@ class ES_DB_Sending_Queue {
 					set_transient( 'ig_es_running_migration_for_' . $i, true, 300 );
 					$batch_start = $i * $batch_size;
 
-					$query   = "SELECT * FROM " . EMAIL_SUBSCRIBERS_STATS_TABLE . " LIMIT {$batch_start}, {$batch_size}";
+					$query = "SELECT * FROM " . EMAIL_SUBSCRIBERS_STATS_TABLE . " LIMIT {$batch_start}, {$batch_size}";
 
 					$results = $wpdb->get_results( $query, ARRAY_A );
 					$values  = $data = $place_holders = array();
@@ -409,6 +423,59 @@ class ES_DB_Sending_Queue {
 		$query = "DELETE FROM " . IG_SENDING_QUEUE_TABLE . " WHERE mailing_queue_id IN ($mailing_queue_ids)";
 
 		$wpdb->query( $query );
+	}
+
+	// Query to get total viewed emails per report
+	public static function get_viewed_count_by_hash( $hash = "" ) {
+
+		global $wpdb;
+
+		$result = 0;
+
+		if ( $hash != "" ) {
+			$query  = $wpdb->prepare( "SELECT COUNT(*) AS count
+									FROM " . IG_SENDING_QUEUE_TABLE . "
+									WHERE opened = 1 AND mailing_queue_hash = %s", array( $hash ) );
+			$result = $wpdb->get_var( $query );
+
+			if ( $result == 0 ) {
+				$es_deliver_report_table = EMAIL_SUBSCRIBERS_STATS_TABLE;
+				$table_name              = $wpdb->get_var( "SHOW TABLES LIKE '{$es_deliver_report_table}' " );
+				if ( $table_name === $es_deliver_report_table ) {
+					$query  = $wpdb->prepare( "SELECT COUNT(*) AS count FROM {$es_deliver_report_table} WHERE es_deliver_status = 'Viewed' AND  es_deliver_sentguid = %s", array( $hash ) );
+					$result = $wpdb->get_var( $query );
+				}
+			}
+
+		}
+
+		return $result;
+
+	}
+
+	public static function get_total_email_count_by_hash( $hash = "" ) {
+
+		global $wpdb;
+
+		$result = 0;
+
+		if ( $hash != "" ) {
+			$query  = $wpdb->prepare( "SELECT COUNT(*) AS count
+									FROM " . IG_SENDING_QUEUE_TABLE . "
+									WHERE mailing_queue_hash = %s", array( $hash ) );
+			$result = $wpdb->get_var( $query );
+			if ( $result == 0 ) {
+				$es_deliver_report_table = EMAIL_SUBSCRIBERS_STATS_TABLE;
+				$table_name              = $wpdb->get_var( "SHOW TABLES LIKE '{$es_deliver_report_table}' " );
+				if ( $table_name === $es_deliver_report_table ) {
+					$query  = $wpdb->prepare( "SELECT COUNT(*) AS count FROM {$es_deliver_report_table} WHERE es_deliver_sentguid = %s", array( $hash ) );
+					$result = $wpdb->get_var( $query );
+				}
+			}
+		}
+
+		return $result;
+
 	}
 
 }

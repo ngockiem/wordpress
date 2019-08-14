@@ -4,7 +4,7 @@
   Plugin Name: Newsletter
   Plugin URI: https://www.thenewsletterplugin.com/plugins/newsletter
   Description: Newsletter is a cool plugin to create your own subscriber list, to send newsletters, to build your business. <strong>Before update give a look to <a href="https://www.thenewsletterplugin.com/category/release">this page</a> to know what's changed.</strong>
-  Version: 6.0.7
+  Version: 6.1.4
   Author: Stefano Lissa & The Newsletter Team
   Author URI: https://www.thenewsletterplugin.com
   Disclaimer: Use at your own risk. No warranty expressed or implied is provided.
@@ -29,7 +29,7 @@
  */
 
 // Used as dummy parameter on css and js links
-define('NEWSLETTER_VERSION', '6.0.7');
+define('NEWSLETTER_VERSION', '6.1.4');
 
 global $newsletter, $wpdb;
 
@@ -274,8 +274,7 @@ class Newsletter extends NewsletterModule {
   `click_count` int(10) unsigned NOT NULL DEFAULT '0',
   `version` varchar(10) NOT NULL DEFAULT '',
   `open_count` int(10) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`)
-) $charset_collate;";
+  PRIMARY KEY (`id`)) $charset_collate;";
 
         dbDelta($sql);
 
@@ -297,12 +296,6 @@ class Newsletter extends NewsletterModule {
           ) $charset_collate;");
         $wpdb->suppress_errors($suppress_errors);
 
-//        if ('utf8mb4' === $wpdb->charset) {
-//            require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-//            if (function_exists('maybe_convert_table_to_utf8mb4')) {
-//                maybe_convert_table_to_utf8mb4(NEWSLETTER_EMAILS_TABLE);
-//            }
-//        }
         // Some setting check to avoid the common support request for mis-configurations
         $options = $this->get_options();
 
@@ -341,23 +334,41 @@ class Newsletter extends NewsletterModule {
         return true;
     }
 
+    function is_allowed() {
+        if (current_user_can('administrator')) {
+            return true;
+        }
+        if (!empty($this->options['editor']) && current_user_can('editor')) return true;
+        if (!empty($this->options['roles'])) {
+            foreach ($this->options['roles'] as $role) {
+                if (current_user_can($role)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     function admin_menu() {
-        // This adds the main menu page
-        add_menu_page('Newsletter', 'Newsletter', ($this->options['editor'] == 1) ? 'manage_categories' : 'manage_options', 'newsletter_main_index', '', plugins_url('newsletter') . '/images/menu-icon.png', '30.333');
+        if (!$this->is_allowed())
+            return;
 
-        $this->add_menu_page('index', 'Dashboard');
-        $this->add_menu_page('welcome', 'Welcome');
-        $this->add_menu_page('main', 'Settings and More', 'manage_options');
+        add_menu_page('Newsletter', 'Newsletter', 'exist', 'newsletter_main_index', '', plugins_url('newsletter') . '/images/menu-icon.png', '30.333');
 
+        $this->add_menu_page('index', __('Dashboard', 'newsletter'));
+        $this->add_admin_page('info', __('Company info', 'newsletter'));
 
-        $this->add_admin_page('smtp', 'SMTP', 'manage_options');
-        $this->add_admin_page('status', 'Status', 'manage_options');
-        $this->add_admin_page('info', 'Company info');
+        if (current_user_can('administrator')) {
+            $this->add_menu_page('welcome', __('Welcome', 'newsletter'));
+            $this->add_menu_page('main', __('Settings and More', 'newsletter'));
+            $this->add_admin_page('smtp', 'SMTP');
+            $this->add_admin_page('status', __('Status', 'newsletter'));
+        }
     }
 
     function add_extensions_menu() {
         if (!class_exists('NewsletterExtensions')) {
-            $this->add_menu_page('extensions', '<span style="color:#27AE60; font-weight: bold;">Addons</span>');
+            $this->add_menu_page('extensions', '<span style="color:#27AE60; font-weight: bold;">' . __('Addons', 'newsletter') . '</span>');
         }
     }
 
@@ -380,7 +391,7 @@ class Newsletter extends NewsletterModule {
         add_shortcode('newsletter_replace', array($this, 'shortcode_newsletter_replace'));
 
         if (is_admin()) {
-            add_action('admin_notices', array($this, 'hook_admin_notices'));
+            add_action('in_admin_header', array($this, 'hook_in_admin_header'), 1000);
 
             if ($this->is_admin_page()) {
                 $newsletter_url = plugins_url('newsletter');
@@ -414,17 +425,11 @@ class Newsletter extends NewsletterModule {
             add_action('wp_enqueue_scripts', array($this, 'hook_wp_enqueue_scripts'));
         }
 
-        //add_filter('site_transient_update_plugins', array($this, 'hook_site_transient_update_plugins'));
-
         do_action('newsletter_init');
 
         if (empty($this->action)) {
             return;
         }
-
-        // TODO: Remove!
-        $cache_stop = true;
-        $hyper_cache_stop = true;
 
         if ($this->action == 'fu') {
             $user = $this->check_user();
@@ -441,6 +446,16 @@ class Newsletter extends NewsletterModule {
             echo 'ok';
             die();
         }
+    }
+    
+    function hook_in_admin_header() {
+        if (!$this->is_admin_page()) {
+            add_action('admin_notices', array($this, 'hook_admin_notices'));
+            return;
+        }
+        remove_all_actions('admin_notices');
+        remove_all_actions('all_admin_notices');
+        add_action('admin_notices', array($this, 'hook_admin_notices'));
     }
 
     function hook_admin_notices() {

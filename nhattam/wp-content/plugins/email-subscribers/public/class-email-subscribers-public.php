@@ -126,12 +126,14 @@ class Email_Subscribers_Public {
 
 	}
 
+	public function es_email_subscribe_wp_loaded() {
+		new ES_Cron();
+	}
 	public function es_email_subscribe_init() {
 
 		global $wpdb;
-
 		//initialize 
-		new ES_Cron();
+		// new ES_Cron();
 		new ES_Handle_Subscription();
 		new ES_Shortcode();
 
@@ -183,6 +185,12 @@ class Email_Subscribers_Public {
 							$subject = ES_Mailer::prepare_welcome_email_subject( $data );
 							ES_Mailer::send( $email, $subject, $content );
 						}
+
+						$lists     = ES_DB_Lists::get_all_lists_name_by_contact( $db_id );
+						$list_name = implode( ", ", $lists );
+
+						$data['list_name'] = $list_name;
+						ES_Common::send_signup_notification_to_admins( $data );
 					}
 
 					do_action( 'es_redirect_to_optin_page', $option );

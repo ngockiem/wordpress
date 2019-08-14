@@ -64,22 +64,23 @@ class ES_Handle_Subscription {
 				exit;
 			}
 
+			$email = ! empty( $form_data['esfpx_email'] ) ? sanitize_email( $form_data['esfpx_email'] ) : '';
+			$name  = ! empty( $form_data['esfpx_name'] ) ? sanitize_text_field( $form_data['esfpx_name'] ) : '';
+
 			$first_name = $last_name = '';
-			if ( ! empty( $form_data['esfpx_name'] ) ) {
-				$name = trim( $form_data['esfpx_name'] );
+			if ( ! empty( $name ) ) {
 				// Get First Name and Last Name from Name
 				$name_parts = ES_Common::prepare_first_name_last_name( $name );
 				$first_name = $name_parts['first_name'];
 				$last_name  = $name_parts['last_name'];
 			} else {
-				$email      = trim( $form_data['esfpx_email'] );
 				$first_name = ES_Common::get_name_from_email( $email );
 			}
 
 			$this->name          = $first_name;
 			$this->first_name    = $first_name;
 			$this->last_name     = $last_name;
-			$this->email         = isset( $form_data['esfpx_email'] ) ? trim( $form_data['esfpx_email'] ) : '';
+			$this->email         = $email;
 			$this->list_ids      = isset( $form_data['esfpx_lists'] ) ? $form_data['esfpx_lists'] : array();
 			$this->es_nonce      = isset( $form_data['esfpx_es-subscribe'] ) ? trim( $form_data['esfpx_es-subscribe'] ) : '';
 			$this->form_id       = isset( $form_data['esfpx_form_id'] ) ? trim( $form_data['esfpx_form_id'] ) : 0;
@@ -155,13 +156,14 @@ class ES_Handle_Subscription {
 							$this->send_welcome_notification();
 						}
 
+						$ig_es_notifyadmin = get_option( 'ig_es_notify_admin' );
+						if ( 'yes' === $ig_es_notifyadmin ) {
+							$this->send_admin_signup_notification();
+						}
+						
 						$response['message'] = 'es_single_optin_success_message';
 					}
 
-					$ig_es_notifyadmin = get_option( 'ig_es_notify_admin' );
-					if ( 'yes' === $ig_es_notifyadmin ) {
-						$this->send_admin_signup_notification();
-					}
 
 					$response['status'] = 'SUCCESS';
 
@@ -299,20 +301,14 @@ class ES_Handle_Subscription {
 		$es_response = array( 'status' => 'ERROR', 'message' => '' );
 
 		if ( ! $this->from_rainmaker ) {
-			//honey-pot validation
-			//$hp_key = "esfpx_es_hp_" . wp_create_nonce( 'es_hp' );
-			$data_keys = array_keys( $data );
-			$hp_key    = "esfpx_es_hp_";
-			foreach ( $data_keys as $i => $key ) {
-				if ( strpos( $key, $hp_key ) === 0 ) {
-					if ( ! isset( $data[ $data_keys[ $i ] ] ) || ! empty( $data[ $data_keys[ $i ] ] ) ) {
-						$es_response['message'] = 'es_unexpected_error_notice';
 
-						return $es_response;
-					}
-				}
+			// Honeypot validation
+			$hp_key = "esfpx_es_hp_" . wp_create_nonce( 'es_hp' );
+			if ( ! isset( $data[ $hp_key ] ) || ! empty( $data[ $hp_key ] ) ) {
+				$es_response['message'] = 'es_unexpected_error_notice';
+
+				return $es_response;
 			}
-
 		}
 
 		$name = isset( $data['esfpx_name'] ) ? $data['esfpx_name'] : '';
@@ -365,9 +361,23 @@ class ES_Handle_Subscription {
 		return $es_response;
 	}
 
+	/**
+	 * @param $email
+	 *
+	 * @return bool
+	 */
 	public function is_domain_blocked( $email ) {
 
-		$domains = get_option( 'ig_es_blocked_domains' );
+		if ( empty( $email ) ) {
+			return true;
+		}
+
+		$domains = trim( get_option( 'ig_es_blocked_domains', '' ) );
+
+		// No domains to block? Return
+		if ( empty( $domains ) ) {
+			return false;
+		}
 
 		$domains = explode( PHP_EOL, $domains );
 
